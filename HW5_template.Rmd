@@ -1,8 +1,12 @@
 ---
 title: STAT 230 Homework 5
-author: "My Name"
+author: "Owen Forman"
 output: pdf_document
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
+
 ```{r, include=FALSE}
 library(ggplot2)
 library(dplyr)
@@ -14,38 +18,57 @@ library(GGally)
 library(stargazer)
 ```
 
-
-
-
-**1.** The following is a sequential ANOVA table (with some entries removed) for the regression of $Y$ on $x_1$.
+**1.** The following is a sequential ANOVA table (with some entries
+removed) for the regression of $Y$ on $x_1$.
 
 \begin{table}[!h]
 \centering
 \label{my-label}
 \begin{tabular}{llllll}
      & Df & Sum Sq   & Mean Sq  & F value  & Pr(>F) \\
-x & 3  & 2309 & ??  & ?? & 0.01    \\
+x & 3  & 2309 & 769.6667  & 5.597576 & 0.01    \\
 Residual  & 12 & 1650 & 137.5 &    &        
 \end{tabular}
 \end{table}
 
+
+```{r}
+2309 / 3
+
+(2309 / 3)/137.5
+```
+
 (1a) Fill in the question marks.
+
+\textbf{Answer:} Completed within table
 
 (1b) What is the estimate of $\sigma$ for the regression model?
 
-(1c) The degrees of freedom for $x$ is 3. Explain why this means that $x$ is a categorical variable and say how many categories the variable can take.
+(1c) The degrees of freedom for $x$ is 3. Explain why this means that
+$x$ is a categorical variable and say how many categories the variable
+can take.
 
 (1d) Interpret the $p$-value in the table.
 
-
-**2.** (Modification of Exercises 12.14 and 12.15). Reread Section 11.1.2 and then answer the questions below. The response variable is the ratio of the brain tumor antibody count to the liver antibody count, so first calculate that as a new variable:
+**2.** (Modification of Exercises 12.14 and 12.15). Reread Section
+11.1.2 and then answer the questions below. The response variable is the
+ratio of the brain tumor antibody count to the liver antibody count, so
+first calculate that as a new variable:
 
 ```{r}
 data(case1102, package = "Sleuth3")
 case1102$Y <- case1102$Brain / case1102$Liver
 ```
 
-(2a) Plot the response variable, `Y`, against the length of time after infusion (`Time`) and color-code by Treatment. Make the same plot but taking the logarithm of `Y` and `Time`. First, explain why the book suggests taking logarithms of these variables. Then describe whether there appears to be an interaction between the treatment and and length of time after infusion.
+(2a) Plot the response variable, `Y`, against the length of time after
+infusion (`Time`) and color-code by Treatment. Make the same plot but
+taking the logarithm of `Y` and `Time`. First, explain why the book
+suggests taking logarithms of these variables. Then describe whether
+there appears to be an interaction between the treatment and and length
+of time after infusion.
+
+\textbf{Answer:} The book suggests taking a logarithm of Y and time since the data does not appear to be linear. Y not only appears to be increasing exponentially as time increases, but there is also an increasing spread in the data as time increases. Since this original model currently violates our linearity and constant variance assumptions, the book suggests transforming the data in order to mitigate these issues.
+Looking at the final logg-ed plot, I believe there does appear to be an interaction between the treatment and length of time after infusion. Specifically, it appears like the BD treatment has a greater (positive) effect on the log(ratio of the brain tumor antibody count to the liver antibody count) than the NS treatment does at lower log(time), whereas the difference between the two at higher log(time) appear to be much closer to 0 
 
 ```{r, fig.width = 8, fig.height=3}
 origPlot <- ggplot(case1102, aes(y = Y, x = Time, color = Treatment)) + geom_point() +
@@ -56,15 +79,37 @@ loglogPlot <- ggplot(case1102, aes(y = log(Y), x = log(Time), color = Treatment)
 origPlot | loglogPlot
 ```
 
-(2b) The book asks the following on p. 315: "Was the antibody concentration in the tumor increased by the use of the blood-brain barrier disruption infusion? Is so, by how much? Do the answers to these two questions depend on the length of time after the infusion (from 1/2 to 72 hours)? What is the effect of treatment on antibody concentration after weight loss, total weight, and other covariates are accounted for?"
 
-Describe the goals of the analysis. Is the primary goal one of prediction or of understanding?
 
-(2c) Fit the model implied by the questions quoted in part (b) and check the residuals from this model. (In the code below, we set the normal saline solution as the reference level since it is the control treatment.) Is there any evidence of serious nonlinearity or heteroskedasticity?
+(2b) The book asks the following on p. 315: "Was the antibody
+concentration in the tumor increased by the use of the blood-brain
+barrier disruption infusion? Is so, by how much? Do the answers to these
+two questions depend on the length of time after the infusion (from 1/2
+to 72 hours)? What is the effect of treatment on antibody concentration
+after weight loss, total weight, and other covariates are accounted
+for?"
+
+Describe the goals of the analysis. Is the primary goal one of
+prediction or of understanding?
+
+\textbf{Answer:} Understanding (though they may care about specific sizes of effects, it doesn't sound like the main goal is to predict what the effect on some person with x,y,z traits would be, but rather to UNDERSTAND what the effects are and which variables change the effect in order to try and get at the question of why these effects are occuring) 
+
+
+(2c) Fit the model implied by the questions quoted in part (b) and check
+the residuals from this model. (In the code below, we set the normal
+saline solution as the reference level since it is the control
+treatment.) Is there any evidence of serious nonlinearity or
+heteroskedasticity?
+
+
 
 *Notes*: \newline
-1. In order to save you time, I am not asking you to make plots of the response vs. all predictor variables before fitting the model below. In a realistic setting, you should do that. \newline
-2. You may see differences in variability in the plots against the `Days` and `Sex` variables, but this is due to the small sample sizes in some of the groups for those variables.
+1. In order to save you time, I am not asking you to make plots of the
+response vs. all predictor variables before fitting the model below. In
+a realistic setting, you should do that. \newline
+2. You may see differences in variability in the plots against the
+`Days` and `Sex` variables, but this is due to the small sample sizes in
+some of the groups for those variables.
 
 ```{r}
 case1102$Treatment <- relevel(case1102$Treatment,
@@ -76,11 +121,21 @@ library(ggResidpanel)
 resid_xpanel(model1)
 ```
 
-(2d) Answer the questions posed in part (b). Be sure to interpret your model on the original data scale, not on the log scale. (If the answer to the question "Do the answers to these two questions depend on the length of time after the infusion (from 1/2 to 72 hours)?" is "no", refit the model without the interaction before answering the other questions).
+(2d) Answer the questions posed in part (b). Be sure to interpret your
+model on the original data scale, not on the log scale. (If the answer
+to the question "Do the answers to these two questions depend on the
+length of time after the infusion (from 1/2 to 72 hours)?" is "no",
+refit the model without the interaction before answering the other
+questions).
 
-(2e) Describe the process that you would use to further refine the model from part (c). (You do not need to do any further refinement here, just describe the process that you would use.)
+(2e) Describe the process that you would use to further refine the model
+from part (c). (You do not need to do any further refinement here, just
+describe the process that you would use.)
 
-(2f) Consider selecting a model via backward elimination, starting with a model with all pairwise interactions. (You can use the code below.) Briefly discuss the relative merits of the selected model for answering the questions posed in part (b).
+(2f) Consider selecting a model via backward elimination, starting with
+a model with all pairwise interactions. (You can use the code below.)
+Briefly discuss the relative merits of the selected model for answering
+the questions posed in part (b).
 
 ```{r}
 upper_model <- lm(log(Y) ~ (log(Time) + Treatment + Sex + Days +  Weight + Loss + Tumor)^2,
@@ -94,17 +149,15 @@ backwardSelectModel <- stepAIC(upper_model, scope = list(lower = lower_model,
 summary(backwardSelectModel)
 ```
 
-
-**3.**: Wages and Race
-Consider ch.10 exercise 29 to answer the following questions. Review the background info for this exercise and data coding provided by the exercise description.
+**3.**: Wages and Race Consider ch.10 exercise 29 to answer the
+following questions. Review the background info for this exercise and
+data coding provided by the exercise description.
 
 ```{r}
 data(ex1029, package = "Sleuth3")
 ```
 
-
-(3a)
-In R, fit the interaction model described below:
+(3a) In R, fit the interaction model described below: 
 $$
 \begin{split}
 \mu(\log(WeeklyEarnings)) 
@@ -112,11 +165,19 @@ $$
 & +\beta_6 regionS + \beta_7 regionW + \beta_8 regionNE \times RaceNotBlack \\
 & +\beta_9 regionS \times RaceNotBlack+ \beta_{10} regionW\times RaceNotBlack
 \end{split}
-$$
-Use an F test to test whether the effect of race (Black/non-Black) on earnings of males differs by region, after controlling for race, region, education, experience, and metropolitan status. Write down the null and alternative hypotheses in terms of a mean function for log(earnings) (e.g. Null: $\mu(\log(WeeklyEarnings)) = ...$ vs. Alt: $\mu(\log(WeeklyEarnings)) = ...$), then use R to do the F test of these hypotheses. State your conclusion, in context, for this test.
+$$ 
+Use an F test to test whether the effect of race (Black/non-Black) on
+earnings of males differs by region, after controlling for race, region,
+education, experience, and metropolitan status. Write down the null and
+alternative hypotheses in terms of a mean function for log(earnings)
+(e.g. Null: $\mu(\log(WeeklyEarnings)) = ...$ vs. Alt:
+$\mu(\log(WeeklyEarnings)) = ...$), then use R to do the F test of these
+hypotheses. State your conclusion, in context, for this test.
 
-(3b)
-Fit the no interaction model (below) and use it to interpret the effect that race (Black vs. non-Black) has on earnings (original scale, not logged scale) after controlling for all other predictors, and give a confidence interval for this effect too.
+(3b) Fit the no interaction model (below) and use it to interpret the
+effect that race (Black vs. non-Black) has on earnings (original scale,
+not logged scale) after controlling for all other predictors, and give a
+confidence interval for this effect too. 
 $$
 \begin{split}
 \mu(\log(WeeklyEarnings)) 
@@ -125,38 +186,59 @@ $$
 \end{split}
 $$
 
-
-(3c)
-Describe the distribution of the residuals for the model given in part (b) with both a histogram and normal qq plot. Our modeling goal is to explore the effect of race (Black/notBlack) on estimated earnings of males after controlling for region, education, experience, and MetStatus. With this in mind, is the distribution of these residuals concerning? Explain. (Hint: think about when normality is **not** a concern.)
+(3c) Describe the distribution of the residuals for the model given in
+part (b) with both a histogram and normal qq plot. Our modeling goal is
+to explore the effect of race (Black/notBlack) on estimated earnings of
+males after controlling for region, education, experience, and
+MetStatus. With this in mind, is the distribution of these residuals
+concerning? Explain. (Hint: think about when normality is **not** a
+concern.)
 
 ```{r}
 library(ggResidpanel)
-resid_panel(wage_lmred, plots = c("hist", "qq"))
+#resid_panel(wage_lmred, plots = c("hist", "qq"))
 ```
 
-(3d)
-Using the `ggResidpanel` package, create the six possible residual plots for this model (fitted + 5 predictors). For each, comment on the linearity and constant variance assumptions made for this model. This is a large data set (with lots of residuals), so add `smoother = TRUE` to add a smoother line to help detect nonlinearity in the overlapping points in your residual plots.
+(3d) Using the `ggResidpanel` package, create the six possible residual
+plots for this model (fitted + 5 predictors). For each, comment on the
+linearity and constant variance assumptions made for this model. This is
+a large data set (with lots of residuals), so add `smoother = TRUE` to
+add a smoother line to help detect nonlinearity in the overlapping
+points in your residual plots.
+
 ```{r, fig.height=6}
-resid_panel(wage_lmred, plots = "resid", smoother = TRUE)
-resid_xpanel(wage_lmred, smoother = TRUE)
+#resid_panel(wage_lmred, plots = "resid", smoother = TRUE)
+#resid_xpanel(wage_lmred, smoother = TRUE)
 ```
 
-(3e) 
-One way to "test" for curvature is to add a quadratic term to your model. Since part (d) suggest a nonlinear effect of experience, add a quadratic term for experience to the linear model above and fit this model to the data. Use the t-test results to determine whether the nonlinear effect of experience is significant.
+(3e) One way to "test" for curvature is to add a quadratic term to your
+model. Since part (d) suggest a nonlinear effect of experience, add a
+quadratic term for experience to the linear model above and fit this
+model to the data. Use the t-test results to determine whether the
+nonlinear effect of experience is significant.
 
-(3f)
-Using your model from (e), report the case numbers of the cases with the highest leverage, studentized residuals and Cook's distance values. Use the data for these cases and basic EDA to explain why their respective case influence stat is high. Then explain why none of these cases need to be removed from our data to adequately model earnings. 
+(3f) Using your model from (e), report the case numbers of the cases
+with the highest leverage, studentized residuals and Cook's distance
+values. Use the data for these cases and basic EDA to explain why their
+respective case influence stat is high. Then explain why none of these
+cases need to be removed from our data to adequately model earnings.
 
+If you'd like to use the `augment`ed data frame to find the row number
+of these "max" case influence stats, I suggest that you do the following
 
-If you'd like to use the `augment`ed data frame to find the row number of these "max" case influence stats, I suggest that you do the following
+-   Add **row numbers** to your data set, e.g. like this using `dplyr`:
 
-- Add **row numbers** to your data set, e.g. like this using `dplyr`:
 ```{r}
 library(dplyr)
-my_data <- my_data %>% mutate(case = row_number())
+#my_data <- my_data %>% mutate(case = row_number())
 ```
-- Then `augment` your `lm` and the data set to add the case influence stats to your original data set (otherwise R adds these stats to data that matches your model terms (logged and quadratic terms without case number))
+
+-   Then `augment` your `lm` and the data set to add the case influence
+    stats to your original data set (otherwise R adds these stats to
+    data that matches your model terms (logged and quadratic terms
+    without case number))
+
 ```{r}
 library(broom)
-my_data_aug <- augment(my_lm, data = my_data)
+#my_data_aug <- augment(my_lm, data = my_data)
 ```
