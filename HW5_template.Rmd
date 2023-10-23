@@ -32,23 +32,40 @@ Residual  & 12 & 1650 & 137.5 &    &
 \end{table}
 
 
-```{r}
-2309 / 3
-
-(2309 / 3)/137.5
-```
-
 (1a) Fill in the question marks.
 
 \textbf{Answer:} Completed within table
 
+```{r}
+#Calculates MSR from SSR/Df(R)
+2309 / 3
+
+#Calculates F value from MSR/MSE
+(2309 / 3)/137.5
+```
+
 (1b) What is the estimate of $\sigma$ for the regression model?
+
+\textbf{Answer:} 11.72604
+
+```{r}
+
+#calculates sigma from sqrt(MSE)
+sqrt(137.5)
+```
+
+
 
 (1c) The degrees of freedom for $x$ is 3. Explain why this means that
 $x$ is a categorical variable and say how many categories the variable
 can take.
 
+\textbf{Answer:} The degrees of freedom column shows how many terms any one variable will add to the model. Since $x$ is the only variable in the model, it is impossible for it to add 3 terms to the model unless it is a categorical variable. Furthermore we know x must be a categorical variable with 4 levels, since 3 terms are added to the model from the inclusion of the x-variable (one of which is the reference level which isn't included), meaning x has 4 catagories.
+
+
 (1d) Interpret the $p$-value in the table.
+
+\textbf{Answer:} We would expect to see an F-Value this large 1% of the time. Thus, with a significance level of .05, we can say that our F-Value is statistically significant, and so we can reject our null hypothesis that the variable x has 0 effect on Y, in favour of our alternative hypothesis that the variable x has some effect on Y (and thus should be included in our hypothetical regression model!)
 
 **2.** (Modification of Exercises 12.14 and 12.15). Reread Section
 11.1.2 and then answer the questions below. The response variable is the
@@ -101,8 +118,6 @@ saline solution as the reference level since it is the control
 treatment.) Is there any evidence of serious nonlinearity or
 heteroskedasticity?
 
-
-
 *Notes*: \newline
 1. In order to save you time, I am not asking you to make plots of the
 response vs. all predictor variables before fitting the model below. In
@@ -110,6 +125,8 @@ a realistic setting, you should do that. \newline
 2. You may see differences in variability in the plots against the
 `Days` and `Sex` variables, but this is due to the small sample sizes in
 some of the groups for those variables.
+
+\textbf{Answer:} Disregarding the Days and Sex variables (for reasons in the notes above), it still appears that there is potential evidence of  nonlinearity and heteroskedasticity. First, the residual plot for log(time) appears to indicate heteroskedasticity, since there appears to be some variability between the plots, namely the plots are not perfectly the same length and do not fall in line with one another. Next, there appears to be some small issues in the resdiual plot for treatment, as the plots also appear to have some variability between them, with the NS plot having a higher variance than the BD plot. Lastly, there appears to be some slight linear pattern present in the residual plot of Tumor. So there is certaintly evidence, but none of it is completely damning, and most is relatively small evidence.
 
 ```{r}
 case1102$Treatment <- relevel(case1102$Treatment,
@@ -128,14 +145,50 @@ length of time after the infusion (from 1/2 to 72 hours)?" is "no",
 refit the model without the interaction before answering the other
 questions).
 
+(2d.1) Was the antibody concentration in the tumor increased by the use of the blood-brain barrier disruption infusion? 
+
+\textbf{Answer:} To answer this we look at our estimate for beta1. (note to determine whether or not there was an effect we don't need to unlog, our model, since a postive increase in the logged model will still result in a postive increase in the unlogged model).
+
+in this case our beta1 value (where Treatment = BD) is 0.862297, with a p-value of .00827. This shows that (assuming a significance level of .05) we can be extremely likely the antibody concentration in the tumor did increase by the use of the blood-brain barrier disruption infusion
+
+```{r}
+summary(model1)
+summary(aov(model1))
+```
+
+2d.2) If so, by how much? 
+\textbf{Answer:}Now we must unlog the model which can be seen in the attached paper. As seen on the sheet, we are lead to see that when the Treatment = BD, we expect our final result Y will increase multiplicative-ly by 2.399 (e^.875211) (value from model2 after removing interaction)
+
+2d.3) Do the answers to these two questions depend on the length of time after the infusion (from 1/2 to 72 hours)? 
+
+\textbf{Answer:} No,  the answer does not depend on the length of time after the infusion. When we run an anova test on the model we can see that the interaction term has an F-Value of .004 with an associated p-value of .95 (this is a valid p-value since it is the final row before residuals in our anova table). This implies we cannot reject our null hypothesis that beta8 = 0, thus implying we should remove this term from our model as we cannot definitively say that the effect of treatment depends on the length of time after the infusion.
+
+2d.4) What is the effect of treatment on antibody concentration after weight loss, total weight, and other covariates are accounted for?"
+
+\textbf{Answer:} Using the unlogged model  which can be seen in the attached paper we are lead to see that when the Treatment = BD, we expect our final result Y will increase multiplicative-ly by 2.399 (e^.875211) (value from model2 after removing interaction)
+
+
+```{r}
+#refits model without interaction term
+model2 <- lm(log(Y) ~ Treatment + log(Time) + Days + Sex +  Weight + Loss + Tumor,
+                 data = case1102)
+
+summary(aov(model2))
+```
+
+
 (2e) Describe the process that you would use to further refine the model
 from part (c). (You do not need to do any further refinement here, just
 describe the process that you would use.)
+
+\textbf{Answer:} In order to further refine the model I would use an Anova test, and calculate accurate p-values for all F-values within the model. This will allow us to see which beta values are statistically significant (aka not 0, as our null-hypothesis implies) which would result in us choosing to remove variables that do not meet that threshold, which would help refine our model.
 
 (2f) Consider selecting a model via backward elimination, starting with
 a model with all pairwise interactions. (You can use the code below.)
 Briefly discuss the relative merits of the selected model for answering
 the questions posed in part (b).
+
+\textbf{Answer: This new "backwards selected" model, comes with some benefits, and many drawbacks. The main drawback is immediately apparent, that being that our model has become significantly more complicated. Though many of the terms are statistically significant (with extremely low p-values) the effect they have on our predicted Y is extremely minimal, with many having coefficients at or below .01. We've also added something like 10+ terms to the model, which will make interpretations and inference much harder. Now, on the postive side, we have improved the accuracy of our model to some degree. Both the R^2 and adjusted R^2 terms have increased by a decent bit, meaning that our current model accounts for more of the variability in the data than our old model. So, in short, our model has become more complicated, but also more accurate by using backwards selection.
 
 ```{r}
 upper_model <- lm(log(Y) ~ (log(Time) + Treatment + Sex + Days +  Weight + Loss + Tumor)^2,
@@ -166,6 +219,16 @@ $$
 & +\beta_9 regionS \times RaceNotBlack+ \beta_{10} regionW\times RaceNotBlack
 \end{split}
 $$ 
+
+```{r}
+
+#fits the given model above
+ex1029_model <- lm(log(WeeklyEarnings) ~ Educ + Exper + MetropolitanStatus + Region * Race ,
+                 data = ex1029)
+
+summary(ex1029_model)
+```
+
 Use an F test to test whether the effect of race (Black/non-Black) on
 earnings of males differs by region, after controlling for race, region,
 education, experience, and metropolitan status. Write down the null and
@@ -174,10 +237,24 @@ alternative hypotheses in terms of a mean function for log(earnings)
 $\mu(\log(WeeklyEarnings)) = ...$), then use R to do the F test of these
 hypotheses. State your conclusion, in context, for this test.
 
+\textbf{Answer:}
+Null: The effect of race on earnings of males is the same across all regions. So there is no interaction effect between race and region on log(WeeklyEarnings). That is: mu(log(WeeklyEarnings)) = Educ + Exper + MetStatus + Region + Race
+
+Alternative: The effect of race on earnings of males is different across regions. So there is a interaction effect between race and region on log(WeeklyEarnings). That is: mu(log(WeeklyEarnings)) = Educ + Exper + MetropolitanStatus + Region * Race)
+
+Using the F-test provided below, we can see that the interaction of Region and Race has an F-Value of .397 and P-value of .755. (Note this is a valid P-value since Region:Race is the last row in our anova table before Residuals) Thus we cannot Reject our null hypothesis that there is no interaction effect between Race and Region. Alternatively we can say that we cannot reject the null hypothesis that beta8 = beta9 = beta10 = 0, so we should use our "Null" model thatmu(log(WeeklyEarnings)) = Educ + Exper + MetStatus + Region + Race
+
+```{r}
+#summarizes anova table of model
+summary(aov(ex1029_model))
+```
+
+
 (3b) Fit the no interaction model (below) and use it to interpret the
 effect that race (Black vs. non-Black) has on earnings (original scale,
 not logged scale) after controlling for all other predictors, and give a
 confidence interval for this effect too. 
+
 $$
 \begin{split}
 \mu(\log(WeeklyEarnings)) 
@@ -185,6 +262,17 @@ $$
 &+ \beta_5 regionNE +\beta_6 regionS + \beta_7 regionW 
 \end{split}
 $$
+
+\textbf{Answer:} After controlling for all other predictors, we predict that the mean weekly income of someone who is not black will be approx 1.263 (e^0.2331872) times greater than someone's who is black.
+
+```{r}
+ex1029_model2 <- lm(log(WeeklyEarnings) ~ Educ + Exper + MetropolitanStatus + Region + Race ,
+                 data = ex1029)
+
+summary(ex1029_model2)
+```
+
+
 
 (3c) Describe the distribution of the residuals for the model given in
 part (b) with both a histogram and normal qq plot. Our modeling goal is
